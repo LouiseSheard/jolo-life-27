@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>JoLo-Life-27</title>
+  <meta name="description" content="Huskeliste, indkøb, rengøring og hus-opgaver" />
+  <meta name="theme-color" content="#1D9E75" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="JoLo-Life-27" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <style>
+    :root {
+      --green: #1D9E75;
+      --green-dark: #0F6E56;
+      --green-light: #E1F5EE;
+      --green-border: #9FE1CB;
+      --blue: #378ADD;
+      --orange: #D85A30;
+      --pink: #D4537E;
+      --gray: #888780;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f0;
+      color: #1a1a1a;
+      min-height: 100dvh;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .app-header {
+      background: white;
+      border-bottom: 0.5px solid #e0e0d8;
+      padding: 16px 16px 0;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      padding-top: calc(16px + env(safe-area-inset-top));
+    }
+    .app-header h1 { font-size: 20px; font-weight: 600; margin-bottom: 12px; }
+    .app-header .sub { font-size: 12px; color: #888; margin-top: -10px; margin-bottom: 10px; }
+    .tabs {
+      display: flex;
+      gap: 4px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-bottom: 0;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab {
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
+      border: none;
+      background: transparent;
+      color: #888;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .tab.active { color: var(--green); border-bottom-color: var(--green); }
+    .content { padding: 16px; max-width: 600px; margin: 0 auto; }
+    .card {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 0.5px solid #e8e8e0;
+    }
+    .section-lbl { font-size: 12px; font-weight: 500; color: #888; margin-bottom: 8px; }
+    .user-row { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+    .user-chip {
+      font-size: 13px; padding: 6px 12px; border-radius: 99px;
+      border: 0.5px solid #ddd; background: transparent; color: #555;
+      cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.15s;
+    }
+    .user-chip.active { background: #EBF4FF; color: #185FA5; border-color: #B5D4F4; }
+    .udot { width: 8px; height: 8px; border-radius: 50%; }
+    .add-row { display: flex; gap: 8px; margin-bottom: 14px; }
+    .add-row input {
+      flex: 1; font-size: 15px; padding: 10px 14px;
+      border-radius: var(--radius-sm); border: 0.5px solid #ddd;
+      background: #f9f9f6; outline: none; color: #1a1a1a;
+    }
+    .add-row input:focus { border-color: var(--green); background: white; }
+    .add-row input::placeholder { color: #bbb; }
+    .btn-add {
+      padding: 10px 16px; background: var(--green); color: white;
+      border: none; border-radius: var(--radius-sm); font-size: 14px;
+      font-weight: 600; cursor: pointer; white-space: nowrap;
+    }
+    .btn-add:active { background: var(--green-dark); transform: scale(0.97); }
+    .stats-row { display: flex; gap: 8px; margin-bottom: 14px; }
+    .stat-box { flex: 1; background: #f5f5f0; border-radius: var(--radius-sm); padding: 10px 12px; }
+    .stat-box.wide { flex: 2; }
+    .stat-num { font-size: 22px; font-weight: 600; }
+    .stat-lbl { font-size: 11px; color: #888; margin-top: 2px; }
+    .prog-bar { height: 4px; background: #e8e8e0; border-radius: 99px; overflow: hidden; margin-top: 6px; }
+    .prog-fill { height: 100%; background: var(--green); border-radius: 99px; transition: width 0.35s; }
+    .items { display: flex; flex-direction: column; gap: 6px; }
+    .item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 12px; border-radius: var(--radius-sm);
+      background: #f9f9f6; border: 0.5px solid transparent; transition: all 0.15s;
+    }
+    .item.done { opacity: 0.5; }
+    .item.done .item-lbl { text-decoration: line-through; color: #aaa; }
+    .chk {
+      width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid #ccc;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; background: transparent; transition: all 0.15s;
+    }
+    .chk.on { background: var(--green); border-color: var(--green); }
+    .chk.on::after { content:''; display:block; width:5px; height:9px; border:2px solid white; border-top:none; border-left:none; transform:rotate(45deg) translate(-1px,-1px); }
+    .item-lbl { flex: 1; font-size: 15px; }
+    .who { font-size: 12px; color: #aaa; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+    .del-btn { background: none; border: none; cursor: pointer; color: #ccc; font-size: 18px; padding: 4px; line-height: 1; }
+    .del-btn:active { color: #E24B4A; }
+    .divider { height: 0.5px; background: #eee; margin: 12px 0; }
+    .collapse-hdr { display: flex; align-items: center; gap: 6px; cursor: pointer; margin-bottom: 8px; font-size: 13px; font-weight: 500; color: #888; }
+    .badge { font-size: 11px; padding: 2px 8px; border-radius: 99px; background: #f0f0ea; color: #888; }
+    .empty { text-align: center; padding: 32px 16px; color: #bbb; font-size: 14px; }
+    .empty-icon { font-size: 36px; display: block; margin-bottom: 8px; }
+    .cat-row { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+    .cat-btn { font-size: 12px; padding: 5px 11px; border-radius: 99px; border: 0.5px solid #ddd; background: transparent; color: #666; cursor: pointer; transition: all 0.12s; }
+    .cat-btn.active { background: var(--green-light); color: var(--green-dark); border-color: var(--green-border); }
+    .qty-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+    .qty-btn { width: 24px; height: 24px; border-radius: 50%; border: 0.5px solid #ddd; background: transparent; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+    .qty-val { font-size: 13px; min-width: 20px; text-align: center; color: #888; }
+
+    /* Cleaning */
+    .week-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .week-info { text-align: center; }
+    .week-title { font-size: 15px; font-weight: 600; }
+    .week-sub { font-size: 12px; color: #888; margin-top: 2px; }
+    .nav-btn { width: 36px; height: 36px; border-radius: var(--radius-sm); border: 0.5px solid #ddd; background: transparent; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+    .today-btn { font-size: 12px; padding: 5px 11px; border-radius: 99px; border: 0.5px solid var(--green-border); background: var(--green-light); color: var(--green-dark); cursor: pointer; font-weight: 500; }
+    .floor-hdr { font-size: 11px; font-weight: 600; color: #999; letter-spacing: 0.05em; text-transform: uppercase; margin: 14px 0 4px; display: flex; align-items: center; gap: 6px; }
+    .fdot { width: 6px; height: 6px; border-radius: 50%; }
+    .col-hdrs { display: flex; align-items: center; padding: 0 12px; margin-bottom: 4px; }
+    .col-room { flex: 1; }
+    .col-tasks { display: flex; gap: 6px; }
+    .col-lbl { font-size: 10px; color: #bbb; width: 46px; text-align: center; }
+    .room-row { display: flex; align-items: center; padding: 11px 12px; border-radius: var(--radius-sm); background: #f9f9f6; margin-bottom: 5px; }
+    .room-row.all-done { opacity: 0.4; }
+    .room-row.all-done .room-nm { text-decoration: line-through; color: #bbb; }
+    .room-nm { flex: 1; font-size: 14px; }
+    .task-chks { display: flex; gap: 6px; }
+    .sq-chk { width: 24px; height: 24px; border-radius: 5px; border: 1.5px solid #ccc; cursor: pointer; display: flex; align-items: center; justify-content: center; background: transparent; transition: all 0.15s; margin: 0 11px; flex-shrink: 0; }
+    .sq-chk.on { background: var(--green); border-color: var(--green); }
+    .sq-chk.on::after { content:''; display:block; width:5px; height:9px; border:2px solid white; border-top:none; border-left:none; transform:rotate(45deg) translate(-1px,-1px); }
+
+    /* House tasks */
+    .htask { border: 0.5px solid #e8e8e0; border-radius: var(--radius-md); margin-bottom: 10px; overflow: hidden; background: white; }
+    .htask-hdr { display: flex; align-items: center; gap: 10px; padding: 14px; cursor: pointer; background: white; }
+    .htask-hdr:active { background: #f9f9f6; }
+    .htask.done-t .htask-title { text-decoration: line-through; color: #bbb; }
+    .htask.done-t { opacity: 0.55; }
+    .htask-title { flex: 1; font-size: 15px; font-weight: 500; }
+    .htask-meta { display: flex; align-items: center; gap: 8px; }
+    .sub-count { font-size: 12px; color: #bbb; }
+    .expand-icon { color: #bbb; font-size: 16px; transition: transform 0.2s; }
+    .expand-icon.open { transform: rotate(180deg); }
+    .htask-del { background: none; border: none; cursor: pointer; color: #ddd; font-size: 18px; padding: 4px; line-height: 1; }
+    .htask-del:active { color: #E24B4A; }
+    .mini-prog { height: 3px; background: #f0f0ea; }
+    .mini-fill { height: 100%; background: var(--green); transition: width 0.3s; }
+    .subtasks-body { border-top: 0.5px solid #f0f0ea; background: #fafaf7; padding: 12px 14px; }
+    .sub-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--radius-sm); margin-bottom: 4px; }
+    .sub-row:active { background: white; }
+    .sub-row.done .sub-lbl { text-decoration: line-through; color: #bbb; }
+    .sub-chk { width: 20px; height: 20px; border-radius: 4px; border: 1.5px solid #ccc; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: transparent; transition: all 0.15s; }
+    .sub-chk.on { background: var(--green); border-color: var(--green); }
+    .sub-chk.on::after { content:''; display:block; width:4px; height:8px; border:2px solid white; border-top:none; border-left:none; transform:rotate(45deg) translate(-1px,-1px); }
+    .sub-lbl { flex: 1; font-size: 14px; color: #1a1a1a; }
+    .sub-del { background: none; border: none; cursor: pointer; color: #ddd; font-size: 16px; padding: 4px; line-height: 1; }
+    .sub-del:active { color: #E24B4A; }
+    .sub-add { display: flex; gap: 6px; margin-top: 10px; }
+    .sub-add input { flex: 1; font-size: 14px; padding: 8px 12px; border-radius: var(--radius-sm); border: 0.5px solid #ddd; background: white; outline: none; color: #1a1a1a; }
+    .sub-add input:focus { border-color: var(--green); }
+    .sub-add input::placeholder { color: #ccc; }
+    .sub-add-btn { padding: 8px 14px; background: transparent; color: var(--green); border: 0.5px solid var(--green-border); border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; }
+    .sub-add-btn:active { background: var(--green-light); }
+
+    /* Offline banner */
+    #offline-banner { display: none; background: #ff9500; color: white; text-align: center; font-size: 13px; padding: 6px; }
+    #offline-banner.show { display: block; }
+
+    /* Sync indicator */
+    #sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #ccc; display: inline-block; margin-left: 6px; vertical-align: middle; transition: background 0.3s; }
+    #sync-dot.synced { background: var(--green); }
+    #sync-dot.syncing { background: #f0a500; }
+  </style>
+</head>
+<body>
+
+<div id="offline-banner">⚡ Ingen forbindelse — arbejder offline</div>
+
+<div class="app-header">
+  <h1>🏠 JoLo-Life-27 <span id="sync-dot"></span></h1>
+  <p class="sub">Jon · Louise · Saga</p>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('todo')">✓ Huskeliste</button>
+    <button class="tab" onclick="switchTab('shop')">🛒 Indkøb</button>
+    <button class="tab" onclick="switchTab('clean')">✨ Rengøring</button>
+    <button class="tab" onclick="switchTab('house')">🔧 Hus</button>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- TODO -->
+  <div id="tab-todo">
+    <div class="card">
+      <div class="section-lbl">Hvem tilføjer? <strong id="todo-uname">Jon</strong></div>
+      <div class="user-row">
+        <button class="user-chip active" onclick="setUser('todo','Jon',this)"><span class="udot" style="background:var(--blue)"></span>Jon</button>
+        <button class="user-chip" onclick="setUser('todo','Louise',this)"><span class="udot" style="background:var(--orange)"></span>Louise</button>
+        <button class="user-chip" onclick="setUser('todo','Saga',this)"><span class="udot" style="background:var(--pink)"></span>Saga</button>
+      </div>
+      <div class="add-row">
+        <input id="todo-inp" type="text" placeholder="Hvad skal huskes?" />
+        <button class="btn-add" onclick="addTodo()">+ Tilføj</button>
+      </div>
+      <div id="todo-stats"></div>
+      <div id="todo-active" class="items"></div>
+      <div id="todo-done-sec" style="display:none">
+        <div class="divider"></div>
+        <div class="collapse-hdr" onclick="toggleCollapse('todo')">
+          Udført <span id="todo-done-badge" class="badge"></span>
+          <span id="todo-done-arrow" style="margin-left:auto">▾</span>
+        </div>
+        <div id="todo-done-list" class="items"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHOP -->
+  <div id="tab-shop" style="display:none">
+    <div class="card">
+      <div class="section-lbl">Hvem tilføjer? <strong id="shop-uname">Jon</strong></div>
+      <div class="user-row">
+        <button class="user-chip active" onclick="setUser('shop','Jon',this)"><span class="udot" style="background:var(--blue)"></span>Jon</button>
+        <button class="user-chip" onclick="setUser('shop','Louise',this)"><span class="udot" style="background:var(--orange)"></span>Louise</button>
+        <button class="user-chip" onclick="setUser('shop','Saga',this)"><span class="udot" style="background:var(--pink)"></span>Saga</button>
+      </div>
+      <div class="cat-row">
+        <button class="cat-btn active" onclick="setShopCat(this,'')">Alle</button>
+        <button class="cat-btn" onclick="setShopCat(this,'🥦 Grønt')">🥦 Grønt</button>
+        <button class="cat-btn" onclick="setShopCat(this,'🥛 Mejeri')">🥛 Mejeri</button>
+        <button class="cat-btn" onclick="setShopCat(this,'🍞 Brød')">🍞 Brød</button>
+        <button class="cat-btn" onclick="setShopCat(this,'🥩 Kød')">🥩 Kød</button>
+        <button class="cat-btn" onclick="setShopCat(this,'🧴 Husholdning')">🧴 Husholdning</button>
+      </div>
+      <div class="add-row">
+        <input id="shop-inp" type="text" placeholder="Hvad skal købes?" />
+        <button class="btn-add" onclick="addShop()">+ Tilføj</button>
+      </div>
+      <div id="shop-stats"></div>
+      <div id="shop-active" class="items"></div>
+      <div id="shop-done-sec" style="display:none">
+        <div class="divider"></div>
+        <div class="collapse-hdr" onclick="toggleCollapse('shop')">
+          Lagt i kurv <span id="shop-done-badge" class="badge"></span>
+          <span id="shop-done-arrow" style="margin-left:auto">▾</span>
+        </div>
+        <div id="shop-done-list" class="items"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLEANING -->
+  <div id="tab-clean" style="display:none">
+    <div class="card">
+      <div class="week-nav">
+        <button class="nav-btn" onclick="changeWeek(-1)">‹</button>
+        <div class="week-info">
+          <div class="week-title" id="clean-wtitle"></div>
+          <div class="week-sub" id="clean-wsub"></div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="today-btn" onclick="goNow()">Nu</button>
+          <button class="nav-btn" onclick="changeWeek(1)">›</button>
+        </div>
+      </div>
+      <div style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:#888;margin-bottom:4px">
+          <span id="clean-plbl"></span><span id="clean-ppct"></span>
+        </div>
+        <div class="prog-bar"><div class="prog-fill" id="clean-pfill" style="width:0%"></div></div>
+      </div>
+      <div id="clean-rooms"></div>
+    </div>
+  </div>
+
+  <!-- HOUSE -->
+  <div id="tab-house" style="display:none">
+    <div class="card">
+      <div class="section-lbl">Hvem tilføjer? <strong id="house-uname">Jon</strong></div>
+      <div class="user-row">
+        <button class="user-chip active" onclick="setUser('house','Jon',this)"><span class="udot" style="background:var(--blue)"></span>Jon</button>
+        <button class="user-chip" onclick="setUser('house','Louise',this)"><span class="udot" style="background:var(--orange)"></span>Louise</button>
+        <button class="user-chip" onclick="setUser('house','Saga',this)"><span class="udot" style="background:var(--pink)"></span>Saga</button>
+      </div>
+      <div class="add-row">
+        <input id="house-inp" type="text" placeholder="Ny opgave, fx. Male stuen..." />
+        <button class="btn-add" onclick="addHouseTask()">+ Tilføj</button>
+      </div>
+      <div id="house-stats"></div>
+      <div id="house-active"></div>
+      <div id="house-done-sec" style="display:none">
+        <div class="divider"></div>
+        <div class="collapse-hdr" onclick="toggleHouseDone()">
+          Færdige opgaver <span id="house-done-badge" class="badge"></span>
+          <span id="house-done-arrow" style="margin-left:auto">▾</span>
+        </div>
+        <div id="house-done-list"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  // ╔══════════════════════════════════════════════╗
+  // ║  INDSÆT DIN FIREBASE CONFIG HER             ║
+  // ╚══════════════════════════════════════════════╝
+  const firebaseConfig = {
+    apiKey: "AIzaSyDF-TBVQ0TsYnpKMy3OEFvHrQXSvlQUyDY",
+    authDomain: "jolo-life-27.firebaseapp.com",
+    databaseURL: "https://jolo-life-27-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "jolo-life-27",
+    storageBucket: "jolo-life-27.firebasestorage.app",
+    messagingSenderId: "60718465174",
+    appId: "1:60718465174:web:c4d85168b80d97d77202b7"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const dbRef = ref(db, 'jolo-life-27');
+
+  const syncDot = document.getElementById('sync-dot');
+  let saveTimer = null;
+
+  // ── State ──────────────────────────────────────
+  const COLORS = { Jon:'#378ADD', Louise:'#D85A30', Saga:'#D4537E' };
+  const CLEAN_TASKS = [
+    { key:'ryddet', label:'Ryddet op' },
+    { key:'stoevsuget', label:'Støvsuget' },
+    { key:'rengjort', label:'Rengjort' }
+  ];
+  const FLOORS = [
+    { id:'stue', name:'Stueplan', color:'#1D9E75', rooms:[
+      {id:'koekkenet',name:'Køkken'},{id:'stuen',name:'Stue'},{id:'kontor',name:'Kontor'},
+      {id:'gaestetoi',name:'Gæstetoilet'},{id:'entre',name:'Entre og trappe'}
+    ]},
+    { id:'sal', name:'1. sal', color:'#378ADD', rooms:[
+      {id:'gang',name:'Gang'},{id:'bad',name:'Badeværelse'},
+      {id:'saga',name:'Sagas værelse'},{id:'sove',name:'Soveværelse'}
+    ]},
+    { id:'kaelder', name:'Kælder', color:'#888', rooms:[
+      {id:'bryggers',name:'Bryggers'},{id:'gaestevaerelse',name:'Gæsteværelse'},
+      {id:'kaelder1',name:'Kælderrum 1'},{id:'kaelder2',name:'Kælderrum 2'}
+    ]}
+  ];
+
+  let state = {
+    todo: { user:'Jon', doneOpen:false, items:[] },
+    shop: { user:'Jon', doneOpen:false, cat:'', items:[] },
+    clean: {},
+    house: { user:'Jon', doneOpen:false, tasks:[], expandedIds:[] }
+  };
+  let weekOffset = 0;
+
+  // ── Firebase sync ──────────────────────────────
+  function saveState() {
+    syncDot.className = 'syncing';
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      const data = {
+        todo: state.todo.items,
+        shop: state.shop.items,
+        clean: state.clean,
+        house: state.house.tasks
+      };
+      set(dbRef, data)
+        .then(() => { syncDot.className = 'synced'; })
+        .catch(() => { syncDot.className = ''; });
+    }, 500);
+  }
+
+  onValue(dbRef, (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      state.todo.items = data.todo || [];
+      state.shop.items = data.shop || [];
+      state.clean = data.clean || {};
+      state.house.tasks = data.house || [];
+    }
+    syncDot.className = 'synced';
+    renderAll();
+  });
+
+  // ── Offline detection ──────────────────────────
+  window.addEventListener('offline', () => document.getElementById('offline-banner').classList.add('show'));
+  window.addEventListener('online', () => document.getElementById('offline-banner').classList.remove('show'));
+
+  // ── Helpers ────────────────────────────────────
+  function wKey(o) {
+    const n=new Date(), d=n.getDay()||7, m=new Date(n);
+    m.setDate(n.getDate()-d+1+o*7);
+    return `w${m.getFullYear()}${String(m.getMonth()+1).padStart(2,'0')}${String(m.getDate()).padStart(2,'0')}`;
+  }
+  function wNum(o) {
+    const n=new Date(), d=n.getDay()||7, m=new Date(n);
+    m.setDate(n.getDate()-d+1+o*7);
+    const j=new Date(m.getFullYear(),0,4);
+    return Math.ceil(((m-j)/86400000+j.getDay())/7);
+  }
+  function wDates(o) {
+    const n=new Date(), d=n.getDay()||7, m=new Date(n);
+    m.setDate(n.getDate()-d+1+o*7);
+    const s=new Date(m); s.setDate(m.getDate()+6);
+    const mn=['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
+    return `${m.getDate()}. ${mn[m.getMonth()]} – ${s.getDate()}. ${mn[s.getMonth()]}`;
+  }
+  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function dot(who) { return `<span class="udot" style="background:${COLORS[who]||'#888'}"></span>`; }
+  function getRoomSt(o,rid) { const k=wKey(o); return (state.clean[k]&&state.clean[k][rid])||{ryddet:false,stoevsuget:false,rengjort:false}; }
+
+  // ── Tab switching ──────────────────────────────
+  window.switchTab = (t) => {
+    ['todo','shop','clean','house'].forEach(id => document.getElementById('tab-'+id).style.display = id===t?'':'none');
+    document.querySelectorAll('.tab').forEach((el,i) => el.classList.toggle('active', ['todo','shop','clean','house'][i]===t));
+    if(t==='clean') renderClean();
+  };
+
+  // ── User & category ────────────────────────────
+  window.setUser = (tab, name, btn) => {
+    state[tab].user = name;
+    document.getElementById(tab+'-uname').textContent = name;
+    btn.closest('.user-row').querySelectorAll('.user-chip').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  };
+  window.setShopCat = (btn, cat) => {
+    state.shop.cat = cat;
+    document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  };
+
+  // ── Todo ───────────────────────────────────────
+  window.addTodo = () => {
+    const inp=document.getElementById('todo-inp'), t=inp.value.trim(); if(!t) return;
+    state.todo.items.unshift({id:Date.now(),text:t,who:state.todo.user,done:false});
+    inp.value=''; saveState(); renderTodo();
+  };
+  document.getElementById('todo-inp').addEventListener('keydown', e => { if(e.key==='Enter') window.addTodo(); });
+
+  window.toggleItem = (tab, id) => {
+    const item=state[tab].items.find(i=>i.id===id); if(!item) return;
+    item.done=!item.done; saveState(); tab==='todo'?renderTodo():renderShop();
+  };
+  window.delItem = (tab, id) => {
+    state[tab].items=state[tab].items.filter(i=>i.id!==id); saveState(); tab==='todo'?renderTodo():renderShop();
+  };
+  window.toggleCollapse = (tab) => {
+    state[tab].doneOpen=!state[tab].doneOpen; tab==='todo'?renderTodo():renderShop();
+  };
+
+  function renderStats(tab) {
+    const items=state[tab].items, dN=items.filter(i=>i.done).length, tot=items.length;
+    if(!tot){document.getElementById(tab+'-stats').innerHTML='';return;}
+    const pct=Math.round(dN/tot*100);
+    document.getElementById(tab+'-stats').innerHTML=`<div class="stats-row">
+      <div class="stat-box"><div class="stat-num">${tot-dN}</div><div class="stat-lbl">Mangler</div></div>
+      <div class="stat-box"><div class="stat-num">${dN}</div><div class="stat-lbl">${tab==='shop'?'I kurv':'Udført'}</div></div>
+      <div class="stat-box wide"><div style="font-size:12px;color:#888;margin-bottom:4px">${pct}% færdig</div><div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div></div>
+    </div>`;
+  }
+  function renderItemList(tab) {
+    const active=state[tab].items.filter(i=>!i.done), done=state[tab].items.filter(i=>i.done);
+    const emptyMsg=tab==='shop'?'Indkøbslisten er tom':'Ingen opgaver — godt gået!';
+    document.getElementById(tab+'-active').innerHTML = active.length===0
+      ? `<div class="empty"><span class="empty-icon">${tab==='shop'?'🛒':'✅'}</span>${emptyMsg}</div>`
+      : active.map(item => {
+          const extra = tab==='shop' ? `<div class="qty-row"><button class="qty-btn" onclick="changeQty(${item.id},-1)">−</button><span class="qty-val">${item.qty||1}</span><button class="qty-btn" onclick="changeQty(${item.id},+1)">+</button></div>` : '';
+          const lbl = tab==='shop' ? `<div style="flex:1"><div style="display:flex;align-items:center;gap:6px"><span class="item-lbl" style="flex:none">${esc(item.text)}</span>${item.cat?`<span style="font-size:11px;color:#aaa">${item.cat}</span>`:''}</div>${extra}</div>` : `<span class="item-lbl">${esc(item.text)}</span>`;
+          return `<div class="item"><div class="chk" onclick="toggleItem('${tab}',${item.id})"></div>${lbl}<span class="who">${dot(item.who)} ${item.who}</span><button class="del-btn" onclick="delItem('${tab}',${item.id})">×</button></div>`;
+        }).join('');
+    document.getElementById(tab+'-done-sec').style.display = done.length?'':'none';
+    document.getElementById(tab+'-done-badge').textContent = done.length;
+    document.getElementById(tab+'-done-arrow').textContent = state[tab].doneOpen?'▴':'▾';
+    document.getElementById(tab+'-done-list').innerHTML = state[tab].doneOpen
+      ? done.map(item=>`<div class="item done"><div class="chk on" onclick="toggleItem('${tab}',${item.id})"></div><span class="item-lbl">${esc(item.text)}</span><span class="who">${dot(item.who)} ${item.who}</span><button class="del-btn" onclick="delItem('${tab}',${item.id})">×</button></div>`).join('') : '';
+  }
+  function renderTodo(){renderStats('todo');renderItemList('todo');}
+
+  // ── Shop ───────────────────────────────────────
+  window.addShop = () => {
+    const inp=document.getElementById('shop-inp'),t=inp.value.trim(); if(!t) return;
+    state.shop.items.unshift({id:Date.now(),text:t,who:state.shop.user,cat:state.shop.cat,done:false,qty:1});
+    inp.value=''; saveState(); renderShop();
+  };
+  document.getElementById('shop-inp').addEventListener('keydown', e => { if(e.key==='Enter') window.addShop(); });
+  window.changeQty = (id,d) => {
+    const item=state.shop.items.find(i=>i.id===id); if(!item) return;
+    item.qty=Math.max(1,(item.qty||1)+d); saveState(); renderShop();
+  };
+  function renderShop(){renderStats('shop');renderItemList('shop');}
+
+  // ── Cleaning ───────────────────────────────────
+  window.changeWeek = (d) => { weekOffset+=d; renderClean(); };
+  window.goNow = () => { weekOffset=0; renderClean(); };
+  window.toggleCleanTask = (o,rid,task) => {
+    const k=wKey(o); if(!state.clean[k])state.clean[k]={};
+    if(!state.clean[k][rid])state.clean[k][rid]={ryddet:false,stoevsuget:false,rengjort:false};
+    state.clean[k][rid][task]=!state.clean[k][rid][task];
+    saveState(); renderClean();
+  };
+  function renderClean() {
+    document.getElementById('clean-wtitle').textContent=`Uge ${wNum(weekOffset)}${weekOffset===0?' — Denne uge':''}`;
+    document.getElementById('clean-wsub').textContent=wDates(weekOffset);
+    const allRooms=FLOORS.flatMap(f=>f.rooms), tot=allRooms.length*CLEAN_TASKS.length;
+    let done=0; allRooms.forEach(r=>{const rs=getRoomSt(weekOffset,r.id);CLEAN_TASKS.forEach(t=>{if(rs[t.key])done++;});});
+    const pct=tot?Math.round(done/tot*100):0;
+    document.getElementById('clean-plbl').textContent=`${done} af ${tot} opgaver gjort`;
+    document.getElementById('clean-ppct').textContent=pct+'%';
+    document.getElementById('clean-pfill').style.width=pct+'%';
+    let html='';
+    FLOORS.forEach(floor=>{
+      html+=`<div class="floor-hdr"><span class="fdot" style="background:${floor.color}"></span>${floor.name}</div>`;
+      html+=`<div class="col-hdrs"><div class="col-room"></div><div class="col-tasks">${CLEAN_TASKS.map(t=>`<div class="col-lbl">${t.label}</div>`).join('')}</div></div>`;
+      floor.rooms.forEach(room=>{
+        const rs=getRoomSt(weekOffset,room.id), allDone=CLEAN_TASKS.every(t=>rs[t.key]);
+        html+=`<div class="room-row${allDone?' all-done':''}"><div class="room-nm">${room.name}</div><div class="task-chks">${CLEAN_TASKS.map(t=>`<div class="sq-chk${rs[t.key]?' on':''}" onclick="toggleCleanTask(${weekOffset},'${room.id}','${t.key}')"></div>`).join('')}</div></div>`;
+      });
+    });
+    document.getElementById('clean-rooms').innerHTML=html;
+  }
+
+  // ── House tasks ────────────────────────────────
+  window.addHouseTask = () => {
+    const inp=document.getElementById('house-inp'),text=inp.value.trim(); if(!text) return;
+    const id=Date.now();
+    state.house.tasks.unshift({id,text,who:state.house.user,done:false,subtasks:[]});
+    state.house.expandedIds.push(id);
+    inp.value=''; saveState(); renderHouse();
+  };
+  document.getElementById('house-inp').addEventListener('keydown', e => { if(e.key==='Enter') window.addHouseTask(); });
+
+  window.toggleHouseTask = (id) => {
+    const t=state.house.tasks.find(t=>t.id===id); if(!t) return;
+    t.done=!t.done; saveState(); renderHouse();
+  };
+  window.delHouseTask = (id) => {
+    state.house.tasks=state.house.tasks.filter(t=>t.id!==id);
+    state.house.expandedIds=state.house.expandedIds.filter(i=>i!==id);
+    saveState(); renderHouse();
+  };
+  window.toggleExpand = (id) => {
+    const idx=state.house.expandedIds.indexOf(id);
+    if(idx>=0)state.house.expandedIds.splice(idx,1); else state.house.expandedIds.push(id);
+    renderHouse();
+  };
+  window.addSubtask = (taskId) => {
+    const inp=document.getElementById('sub-inp-'+taskId),text=inp.value.trim(); if(!text) return;
+    const t=state.house.tasks.find(t=>t.id===taskId); if(!t) return;
+    t.subtasks.push({id:Date.now(),text,done:false});
+    inp.value=''; saveState(); renderHouse();
+  };
+  window.toggleSubtask = (taskId,subId) => {
+    const t=state.house.tasks.find(t=>t.id===taskId); if(!t) return;
+    const s=t.subtasks.find(s=>s.id===subId); if(!s) return;
+    s.done=!s.done;
+    if(t.subtasks.length>0&&t.subtasks.every(s=>s.done))t.done=true;
+    else if(!s.done)t.done=false;
+    saveState(); renderHouse();
+  };
+  window.delSubtask = (taskId,subId) => {
+    const t=state.house.tasks.find(t=>t.id===taskId); if(!t) return;
+    t.subtasks=t.subtasks.filter(s=>s.id!==subId); saveState(); renderHouse();
+  };
+  window.toggleHouseDone = () => { state.house.doneOpen=!state.house.doneOpen; renderHouse(); };
+
+  function renderHouseCard(task) {
+    const expanded=state.house.expandedIds.includes(task.id);
+    const subTot=task.subtasks.length, subDone=task.subtasks.filter(s=>s.done).length;
+    const pct=subTot?Math.round(subDone/subTot*100):0;
+    return `<div class="htask${task.done?' done-t':''}">
+      <div class="htask-hdr" onclick="toggleExpand(${task.id})">
+        <div class="chk${task.done?' on':''}" onclick="event.stopPropagation();toggleHouseTask(${task.id})"></div>
+        <span class="htask-title">${esc(task.text)}</span>
+        <div class="htask-meta">
+          ${subTot>0?`<span class="sub-count">${subDone}/${subTot}</span>`:''}
+          <span class="who">${dot(task.who)} ${task.who}</span>
+          <button class="htask-del" onclick="event.stopPropagation();delHouseTask(${task.id})">×</button>
+          <span class="expand-icon${expanded?' open':''}">▾</span>
+        </div>
+      </div>
+      ${subTot>0?`<div class="mini-prog"><div class="mini-fill" style="width:${pct}%"></div></div>`:''}
+      ${expanded?`<div class="subtasks-body">
+        ${task.subtasks.length===0?`<div style="font-size:13px;color:#bbb;padding:4px 0 8px">Ingen delopgaver endnu</div>`:''}
+        ${task.subtasks.map(sub=>`<div class="sub-row${sub.done?' done':''}">
+          <div class="sub-chk${sub.done?' on':''}" onclick="toggleSubtask(${task.id},${sub.id})"></div>
+          <span class="sub-lbl">${esc(sub.text)}</span>
+          <button class="sub-del" onclick="delSubtask(${task.id},${sub.id})">×</button>
+        </div>`).join('')}
+        <div class="sub-add">
+          <input id="sub-inp-${task.id}" type="text" placeholder="Tilføj delopgave..." onkeydown="if(event.key==='Enter')addSubtask(${task.id})" />
+          <button class="sub-add-btn" onclick="addSubtask(${task.id})">+ Tilføj</button>
+        </div>
+      </div>`:''}
+    </div>`;
+  }
+
+  function renderHouse() {
+    const active=state.house.tasks.filter(t=>!t.done), done=state.house.tasks.filter(t=>t.done);
+    const tot=state.house.tasks.length, dN=done.length;
+    const subTot=state.house.tasks.reduce((a,t)=>a+t.subtasks.length,0);
+    const subDone=state.house.tasks.reduce((a,t)=>a+t.subtasks.filter(s=>s.done).length,0);
+    document.getElementById('house-stats').innerHTML = tot>0 ? `<div class="stats-row">
+      <div class="stat-box"><div class="stat-num">${tot-dN}</div><div class="stat-lbl">Aktive</div></div>
+      <div class="stat-box"><div class="stat-num">${dN}</div><div class="stat-lbl">Færdige</div></div>
+      ${subTot>0?`<div class="stat-box wide"><div style="font-size:12px;color:#888;margin-bottom:4px">${subDone} af ${subTot} delopgaver</div><div class="prog-bar"><div class="prog-fill" style="width:${Math.round(subDone/subTot*100)}%"></div></div></div>`:''}
+    </div>` : '';
+    document.getElementById('house-active').innerHTML = active.length===0
+      ? `<div class="empty"><span class="empty-icon">🔧</span>Ingen opgaver endnu</div>`
+      : active.map(renderHouseCard).join('');
+    document.getElementById('house-done-sec').style.display = done.length?'':'none';
+    document.getElementById('house-done-badge').textContent = done.length;
+    document.getElementById('house-done-arrow').textContent = state.house.doneOpen?'▴':'▾';
+    document.getElementById('house-done-list').innerHTML = state.house.doneOpen ? done.map(renderHouseCard).join('') : '';
+  }
+
+  function renderAll(){renderTodo();renderShop();renderClean();renderHouse();}
+</script>
+
+<script>
+  // Register service worker for PWA
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
+</body>
+</html>
